@@ -50,21 +50,23 @@ def start_scan():
             messagebox.showerror("Error", "Please select a save location.")
             return
 
-        wls = np.linspace(start_wl, end_wl, step_size)
+        wls = np.linspace(start_wl, end_wl, step_size+1)
         data = []
         associated_wl = []
 
         run("open_shutter")
 
-        try:
-            for wl in wls:
-                run("goto", wl)
-                data.append(dm.record())
-                associated_wl.append(wl)
-        except Exception as e:
-            messagebox.showerror("Error during scan", str(e))
-        finally:
-            run("close_shutter")
+        #try:
+        for wl in wls:
+            print(wl)
+            run("goto", wl)
+            print('wahoo')
+            data.append(dm.record())
+            print('weehee')
+            associated_wl.append(wl)
+            print('woohoo')
+
+        run("close_shutter")
 
         # Save CSV
         np.savetxt(save_path, np.column_stack([associated_wl, data]), delimiter=",", header="Wavelength,Intensity", comments='')
@@ -78,6 +80,21 @@ def start_scan():
 
 def threaded_scan():
     threading.Thread(target=start_scan).start()
+
+def set_wavelength():
+    set_wl = float(wl_entry.get())
+
+    run("goto", set_wl)
+
+def open_shutter():
+    run("open_shutter")
+
+def close_shutter():
+    run("close_shutter")
+
+def get_wav():
+    run("position")
+
 # --- GUI Layout ---
 
 def show_plot(wls, data):
@@ -98,27 +115,33 @@ tk.Label(root, text="Start Wavelength (nm):").grid(row=0, column=0, sticky="e")
 tk.Label(root, text="End Wavelength (nm):").grid(row=1, column=0, sticky="e")
 tk.Label(root, text="Step Count:").grid(row=2, column=0, sticky="e")
 tk.Label(root, text="Save Location:").grid(row=3, column=0, sticky="e")
+tk.Label(root, text="Set Wavelength:").grid(row=0, column=2, sticky="e")
 
 start_entry = tk.Entry(root)
 end_entry = tk.Entry(root)
 step_entry = tk.Entry(root)
+wl_entry = tk.Entry(root)
 save_location_entry = tk.Entry(root, width=30)
 
 start_entry.grid(row=0, column=1, padx=5, pady=5)
 end_entry.grid(row=1, column=1, padx=5, pady=5)
 step_entry.grid(row=2, column=1, padx=5, pady=5)
+wl_entry.grid(row=0, column=3, padx=5, pady=5)
 save_location_entry.grid(row=3, column=1, padx=5, pady=5)
 
 browse_button = tk.Button(root, text="Browse...", command=browse_save_location)
 browse_button.grid(row=3, column=2, padx=5)
 
-log_output = ScrolledText(root, height=10, width=60, state='disabled')
-log_output.grid(row=6, column=0, columnspan=3, padx=10, pady=5)
-sys.stdout = TextRedirector(log_output)
-sys.stderr = TextRedirector(log_output)  # Optional: catch errors too
-
-
 go_button = tk.Button(root, text="Start Scan", command=threaded_scan, bg="green", fg="white")
 go_button.grid(row=4, column=0, columnspan=3, pady=15)
+
+set_wl_button = tk.Button(root, text="Set", command=set_wavelength, bg="green", fg="white")
+set_wl_button.grid(row=1, column=2, columnspan=3, pady=15)
+
+open_shutter_button = tk.Button(root, text="Open shutter", command=open_shutter, bg="green", fg="white")
+open_shutter_button.grid(row=6, column=3, columnspan=3, pady=15)
+
+close_shutter_button = tk.Button(root, text="Close shutter", command=close_shutter, bg="green", fg="white")
+close_shutter_button.grid(row=7, column=3, columnspan=3, pady=15)
 
 root.mainloop()

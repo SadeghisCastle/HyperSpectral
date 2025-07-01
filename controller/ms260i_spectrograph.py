@@ -29,7 +29,7 @@ class MS260iUSB:
     def goto(self, wavelength: float) -> float:
         """Move to a specified wavelength."""
         self._mono.setWavelength(wavelength)
-        return self.position
+        # return self.position
 
     @property
     def grating(self) -> Dict[str, Union[int, str]]:
