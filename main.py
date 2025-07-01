@@ -9,6 +9,7 @@ import os
 from tkinter.scrolledtext import ScrolledText
 import sys
 import io
+import threading
 
 class TextRedirector(io.TextIOBase):
     def __init__(self, widget):
@@ -24,7 +25,7 @@ class TextRedirector(io.TextIOBase):
         pass  # Not needed
 
 def run(command, *args):
-    cmd = [r"C:/Users/Nanophotonics/AppData/Local/Programs/Python/Python310-32/python.exe", "./controller/spectrograph_command.py", command] + list(map(str, args))
+    cmd = [r"C:/Users/Nanophotonics/AppData/Local/Programs/Python/Python310-32/python.exe", "C:/Users/Nanophotonics/Desktop/HyperSpectral/controller/spectrograph_command.py", command] + list(map(str, args))
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if result.returncode != 0:
@@ -68,24 +69,27 @@ def start_scan():
         # Save CSV
         np.savetxt(save_path, np.column_stack([associated_wl, data]), delimiter=",", header="Wavelength,Intensity", comments='')
 
-        # Plot
-        plt.figure()
-        plt.plot(associated_wl, data)
-        plt.ylim(bottom=-1, top=10)
-        plt.xlabel("Wavelength (nm)")
-        plt.ylabel("Measured Data")
-        plt.title("Spectrograph Data")
-        plt.grid(True)
-        plt.show()
-
-        #messagebox.showinfo("Done", f"Scan complete.\nSaved to:\n{save_path}")
+        root.after(0, show_plot, associated_wl, data)
 
     except ValueError:
         messagebox.showerror("Input Error", "Start/End wavelengths and step size must be numbers.")
     except Exception as e:
         messagebox.showerror("Unexpected Error", str(e))
 
+def threaded_scan():
+    threading.Thread(target=start_scan).start()
 # --- GUI Layout ---
+
+def show_plot(wls, data):
+    # Plot
+        plt.figure()
+        plt.plot(wls, data)
+        plt.ylim(bottom=-1, top=10)
+        plt.xlabel("Wavelength (nm)")
+        plt.ylabel("Measured Data")
+        plt.title("Spectrograph Data")
+        plt.grid(True)
+        plt.show()
 
 root = tk.Tk()
 root.title("YeeHaw")
@@ -114,7 +118,7 @@ sys.stdout = TextRedirector(log_output)
 sys.stderr = TextRedirector(log_output)  # Optional: catch errors too
 
 
-go_button = tk.Button(root, text="Start Scan", command=start_scan, bg="green", fg="white")
+go_button = tk.Button(root, text="Start Scan", command=threaded_scan, bg="green", fg="white")
 go_button.grid(row=4, column=0, columnspan=3, pady=15)
 
 root.mainloop()
