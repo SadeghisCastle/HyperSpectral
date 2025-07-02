@@ -1,6 +1,7 @@
 import clr
 clr.AddReference("Cornerstone")
 import CornerstoneDll
+import time
 
 from typing import Dict, Union
 
@@ -27,9 +28,12 @@ class MS260iUSB:
         return self._mono.getWavelength()
 
     def goto(self, wavelength: float) -> float:
-        """Move to a specified wavelength."""
-        self._mono.setWavelength(wavelength)
-        # return self.position
+        """Send GOWAVE command and confirm movement."""
+        response = self._mono.getStringResponseFromCommand(f"GOWAVE {wavelength:.3f}")
+        time.sleep(1)
+        
+    def get_response(self):
+        return self._mono.getResponse()
 
     @property
     def grating(self) -> Dict[str, Union[int, str]]:
@@ -77,3 +81,14 @@ class MS260iUSB:
         if width is not None:
             self._mono.setSlitWidth(width)
         return self._mono.getSlitWidth()
+    
+    def query(self, msg: str) -> str:
+        self._mono.disconnect()
+        time.sleep(1)
+        self._mono.connect()
+        if not msg.endswith('?'):
+            msg += '?'
+        self._mono.sendCommand(msg)
+        return self._mono.getResponse().strip()
+
+

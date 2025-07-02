@@ -10,6 +10,7 @@ from tkinter.scrolledtext import ScrolledText
 import sys
 import io
 import threading
+import time
 
 class TextRedirector(io.TextIOBase):
     def __init__(self, widget):
@@ -25,13 +26,22 @@ class TextRedirector(io.TextIOBase):
         pass  # Not needed
 
 def run(command, *args):
-    cmd = [r"C:/Users/Nanophotonics/AppData/Local/Programs/Python/Python310-32/python.exe", "C:/Users/Nanophotonics/Desktop/HyperSpectral/controller/spectrograph_command.py", command] + list(map(str, args))
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    cmd = [
+        r"C:/Users/Nanophotonics/AppData/Local/Programs/Python/Python310-32/python.exe",
+        "C:/Users/Nanophotonics/Desktop/HyperSpectral/controller/spectrograph_command.py",
+        command
+    ] + list(map(str, args))
+    
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"MS260i command '{command}' timed out.")
 
     if result.returncode != 0:
         raise RuntimeError(f"Error running MS260i: {result.stderr.strip()}")
 
     print(result.stdout.strip())
+
 
 def browse_save_location():
     filepath = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
@@ -54,17 +64,15 @@ def start_scan():
         data = []
         associated_wl = []
 
+        run("goto", start_wl)
+        time.sleep(5)
         run("open_shutter")
 
         #try:
         for wl in wls:
-            print(wl)
             run("goto", wl)
-            print('wahoo')
             data.append(dm.record())
-            print('weehee')
             associated_wl.append(wl)
-            print('woohoo')
 
         run("close_shutter")
 
@@ -94,6 +102,9 @@ def close_shutter():
 
 def get_wav():
     run("position")
+
+def get_response():
+    run("get_response")
 
 # --- GUI Layout ---
 
