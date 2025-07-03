@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('controller/Cornerstone.dll', 'controller')],
+    datas=[('icon.ico', '.'), ('controller/spectrograph_command.py', 'controller'), ('controller/ms260i_spectrograph.py', 'controller'), ('controller/Cornerstone.dll', 'controller')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,4 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['icon.ico'],
 )

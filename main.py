@@ -175,6 +175,15 @@ root.title("HyperSpectral")
 root.geometry("1200x700")
 root.resizable(True, True)
 
+# Determine icon path (works for both dev and bundled exe)
+if getattr(sys, 'frozen', False):
+    icon_path = os.path.join(sys._MEIPASS, "icon.ico")
+else:
+    icon_path = "icon.ico"
+
+if os.path.exists(icon_path):
+    root.iconbitmap(icon_path)
+
 # --- Scan Settings Section ---
 scan_frame = tk.LabelFrame(root, text="Scan Settings", padx=10, pady=10)
 scan_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
