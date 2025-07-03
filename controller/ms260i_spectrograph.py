@@ -28,12 +28,9 @@ class MS260iUSB:
         return self._mono.getWavelength()
 
     def goto(self, wavelength: float) -> float:
-        """Send GOWAVE command and confirm movement."""
+        """Send GOWAVE"""
         response = self._mono.getStringResponseFromCommand(f"GOWAVE {wavelength:.3f}")
         time.sleep(1)
-        
-    def get_response(self):
-        return self._mono.getResponse()
 
     @property
     def grating(self) -> Dict[str, Union[int, str]]:
@@ -42,10 +39,6 @@ class MS260iUSB:
         lines = self._mono.getGratingLines(gnum)
         label = self._mono.getGratingLabel(gnum)
         return {"number": gnum, "lines": lines, "label": label}
-
-    def set_grating(self, grating: int):
-        """Set active grating."""
-        self._mono.setGrating(grating)
 
     def shutter(self, close: bool = True):
         # print(self._mono.getShutter())
@@ -60,7 +53,6 @@ class MS260iUSB:
     def open_shutter(self):            # Verified
         self._mono.setShutter(True)
         print("Shutter opened.\n")
-
 
     @property
     def shuttered(self) -> bool:

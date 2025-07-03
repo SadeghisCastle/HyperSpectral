@@ -16,9 +16,7 @@ try:
     elif command == "open_shutter":
         spec.open_shutter()
     elif command == "position":
-        spec.position()
-    elif command == "get_response":
-        spec.get_respone()
+        print(spec.position)
     else:
         print(f"Unknown command: {command}", file=sys.stderr)
         sys.exit(1)
